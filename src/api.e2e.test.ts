@@ -106,4 +106,30 @@ describe('Webinar Routes E2E', () => {
     });
     expect(updatedWebinar?.seats).toBe(10);
   });
+
+  it('should organize a webinar', async () => {
+    // ARRANGE
+    const server = fixture.getServer();
+    const prisma = fixture.getPrismaClient();
+
+    // ACT
+    const response = await supertest(server)
+      .post('/webinars')
+      .send({
+        title: 'My E2E Webinar',
+        seats: 50,
+        startDate: '2050-01-01T10:00:00Z',
+        endDate: '2050-01-01T11:00:00Z',
+      })
+      .expect(201);
+
+    // ASSERT
+    expect(response.body.id).toBeDefined();
+
+    const createdWebinar = await prisma.webinar.findUnique({
+        where: { id: response.body.id },
+    });
+    expect(createdWebinar?.title).toBe('My E2E Webinar');
+    expect(createdWebinar?.seats).toBe(50);
+  });
 });

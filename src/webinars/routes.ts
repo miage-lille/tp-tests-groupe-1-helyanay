@@ -9,6 +9,36 @@ export async function webinarRoutes(
   container: AppContainer,
 ) {
   const changeSeatsUseCase = container.getChangeSeatsUseCase();
+  const organizeWebinarsUseCase = container.getOrganizeWebinarsUseCase();
+
+  fastify.post<{
+    Body: {
+      title: string;
+      seats: number;
+      startDate: string;
+      endDate: string;
+    };
+  }>('/webinars', {}, async (request, reply) => {
+    const { title, seats, startDate, endDate } = request.body;
+    const user = new User({
+      id: 'test-user',
+      email: 'test@test.com',
+      password: 'fake',
+    });
+
+    try {
+      const { id } = await organizeWebinarsUseCase.execute({
+        userId: user.props.id,
+        title,
+        seats,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+      });
+      reply.status(201).send({ id });
+    } catch (err: any) {
+      reply.status(400).send({ error: err.message });
+    }
+  });
 
   fastify.post<{
     Body: { seats: string };
